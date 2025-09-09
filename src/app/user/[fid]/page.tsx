@@ -16,6 +16,16 @@ interface User {
     bio?: {
       text: string;
     };
+    location?: {
+      address: {
+        city: string;
+        state: string;
+        country: string;
+      };
+    };
+    banner?: {
+      url: string;
+    };
   };
   follower_count: number;
   following_count: number;
@@ -38,6 +48,9 @@ interface User {
   power_badge: boolean;
   score: number;
   url?: string;
+  pro?: {
+    status: string;
+  };
 }
 
 interface Cast {
@@ -55,13 +68,55 @@ interface Cast {
   };
 }
 
+interface SignerApp {
+  fid: number;
+  profile?: {
+    username: string;
+    display_name: string;
+    pfp_url: string;
+    bio?: string;
+  };
+  signers: Array<{
+    key: string;
+    keyType: number;
+    eventType: string;
+    blockNumber: number;
+    transactionHash: string;
+    blockTimestamp: string;
+    metadata: {
+      requestFid: number;
+      requestSigner: string;
+      signature: string;
+      deadline: number;
+    };
+    messageStats: {
+      casts: number;
+      reactions: number;
+      links: number;
+      verifications: number;
+      total: number;
+      lastUsed: string | null;
+    };
+  }>;
+  totalMessages: number;
+  lastUsed: string | null;
+  appStats: {
+    casts: number;
+    reactions: number;
+    links: number;
+    verifications: number;
+  };
+}
+
 export default function UserPage({ params }: { params: Promise<{ fid: string }> }) {
   const resolvedParams = use(params);
   const [user, setUser] = useState<User | null>(null);
   const [casts, setCasts] = useState<Cast[]>([]);
+  const [signers, setSigners] = useState<SignerApp[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   const [castsLoading, setCastsLoading] = useState(false);
+  const [signersLoading, setSignersLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
@@ -70,15 +125,21 @@ export default function UserPage({ params }: { params: Promise<{ fid: string }> 
   }, [resolvedParams.fid]);
 
   useEffect(() => {
-    // Always fetch casts in background after user data is loaded
+    // Always fetch casts and signers in background after user data is loaded
     if (user && casts.length === 0) {
       fetchUserCasts();
+    }
+    if (user && signers.length === 0) {
+      fetchUserSigners();
     }
   }, [user]);
 
   useEffect(() => {
     if (activeTab === 'casts' && casts.length === 0) {
       fetchUserCasts();
+    }
+    if (activeTab === 'signers' && signers.length === 0) {
+      fetchUserSigners();
     }
   }, [activeTab]);
 
@@ -127,6 +188,45 @@ export default function UserPage({ params }: { params: Promise<{ fid: string }> 
       console.error('Error fetching casts:', error);
     } finally {
       setCastsLoading(false);
+    }
+  };
+
+  const fetchUserSigners = async () => {
+    try {
+      setSignersLoading(true);
+      const response = await fetch(`/api/user/signers?fid=${resolvedParams.fid}`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      setSigners(data);
+    } catch (error) {
+      console.error('Error fetching signers:', error);
+    } finally {
+      setSignersLoading(false);
+    }
+  };
+
+  const formatTimeAgo = (dateString: string): string => {
+    const now = new Date();
+    const date = new Date(dateString);
+    const diffInMs = now.getTime() - date.getTime();
+    
+    const minutes = Math.floor(diffInMs / (1000 * 60));
+    const hours = Math.floor(diffInMs / (1000 * 60 * 60));
+    const days = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+    const months = Math.floor(diffInMs / (1000 * 60 * 60 * 24 * 30));
+    
+    if (minutes < 60) {
+      return `${minutes} minutes ago`;
+    } else if (hours < 24) {
+      return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+    } else if (days < 30) {
+      return `${days} day${days !== 1 ? 's' : ''} ago`;
+    } else {
+      return `${months} month${months !== 1 ? 's' : ''} ago`;
     }
   };
 
@@ -252,13 +352,13 @@ export default function UserPage({ params }: { params: Promise<{ fid: string }> 
                   <div>
                     <strong>primary eth address:</strong> 
                     <span className="font-mono text-xs ml-2 break-all">
-                      {user.verified_addresses?.primary?.eth_address || 'N/A'}
+                      {user.verified_addresses?.eth_addresses?.[0] || 'N/A'}
                     </span>
                   </div>
                   <div>
                     <strong>primary sol address:</strong> 
                     <span className="font-mono text-xs ml-2 break-all">
-                      {user.verified_addresses?.primary?.sol_address || 'N/A'}
+                      {user.verified_addresses?.sol_addresses?.[0] || 'N/A'}
                     </span>
                   </div>
                   <div>
@@ -360,7 +460,68 @@ export default function UserPage({ params }: { params: Promise<{ fid: string }> 
 
             {activeTab === 'signers' && (
               <div className="space-y-4">
-                <div className="text-center text-gray-500">No signer data available in current API response</div>
+                {signersLoading ? (
+                  <div className="text-center">Loading signers...</div>
+                ) : signers.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {signers.map((app) => (
+                      <div key={app.fid} className="border rounded-lg p-4 space-y-3" style={{borderColor: 'var(--border-color)', backgroundColor: 'var(--card-background)'}}>
+                        {/* App Header */}
+                        <div className="flex items-center space-x-3">
+                          <img
+                            src={app.profile?.pfp_url || '/default-avatar.png'}
+                            alt={app.profile?.display_name || `FID ${app.fid}`}
+                            className="w-10 h-10 rounded-full"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold truncate" style={{color: 'var(--foreground)'}}>
+                              {app.profile?.display_name || `FID ${app.fid}`}
+                            </h3>
+                            <p className="text-sm truncate" style={{color: 'var(--text-muted)'}}>
+                              @{app.profile?.username || app.fid}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* App Bio */}
+                        {app.profile?.bio && (
+                          <div className="text-sm" style={{color: 'var(--text-muted)'}}>
+                            {app.profile.bio}
+                          </div>
+                        )}
+
+                        {/* Total Messages */}
+                        <div>
+                          <div className="font-semibold" style={{color: 'var(--foreground)'}}>
+                            {app.totalMessages.toLocaleString()} messages
+                          </div>
+                          <div className="text-sm space-y-1" style={{color: 'var(--text-muted)'}}>
+                            <div>- {app.appStats.casts} casts</div>
+                            <div>- {app.appStats.reactions} reactions</div>
+                            <div>- {app.appStats.links} links</div>
+                            <div>- {app.appStats.verifications} verifications</div>
+                          </div>
+                        </div>
+
+                        {/* Signer Info */}
+                        <div className="pt-3 border-t" style={{borderColor: 'var(--border-color)'}}>
+                          <div className="flex justify-between items-center text-sm">
+                            <span style={{color: 'var(--text-muted)'}}>
+                              {app.signers.length} signer{app.signers.length !== 1 ? 's' : ''}
+                            </span>
+                            {app.lastUsed && (
+                              <span style={{color: 'var(--text-muted)'}}>
+                                last used {formatTimeAgo(app.lastUsed)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center" style={{color: 'var(--text-muted)'}}>No signers found</div>
+                )}
               </div>
             )}
 
