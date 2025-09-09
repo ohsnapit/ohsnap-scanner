@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect, use, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import SearchBar from '@/components/SearchBar';
 import Header from '@/components/Header';
 
@@ -120,30 +121,7 @@ export default function UserPage({ params }: { params: Promise<{ fid: string }> 
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  useEffect(() => {
-    fetchUserData();
-  }, [resolvedParams.fid]);
-
-  useEffect(() => {
-    // Always fetch casts and signers in background after user data is loaded
-    if (user && casts.length === 0) {
-      fetchUserCasts();
-    }
-    if (user && signers.length === 0) {
-      fetchUserSigners();
-    }
-  }, [user]);
-
-  useEffect(() => {
-    if (activeTab === 'casts' && casts.length === 0) {
-      fetchUserCasts();
-    }
-    if (activeTab === 'signers' && signers.length === 0) {
-      fetchUserSigners();
-    }
-  }, [activeTab]);
-
-  const fetchUserData = async () => {
+  const fetchUserData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -169,9 +147,9 @@ export default function UserPage({ params }: { params: Promise<{ fid: string }> 
     } finally {
       setLoading(false);
     }
-  };
+  }, [resolvedParams.fid]);
 
-  const fetchUserCasts = async () => {
+  const fetchUserCasts = useCallback(async () => {
     try {
       setCastsLoading(true);
       const response = await fetch(`/api/user/casts?fid=${resolvedParams.fid}&limit=10`);
@@ -189,9 +167,9 @@ export default function UserPage({ params }: { params: Promise<{ fid: string }> 
     } finally {
       setCastsLoading(false);
     }
-  };
+  }, [resolvedParams.fid]);
 
-  const fetchUserSigners = async () => {
+  const fetchUserSigners = useCallback(async () => {
     try {
       setSignersLoading(true);
       const response = await fetch(`/api/user/signers?fid=${resolvedParams.fid}`);
@@ -207,7 +185,30 @@ export default function UserPage({ params }: { params: Promise<{ fid: string }> 
     } finally {
       setSignersLoading(false);
     }
-  };
+  }, [resolvedParams.fid]);
+
+  useEffect(() => {
+    fetchUserData();
+  }, [fetchUserData]);
+
+  useEffect(() => {
+    // Always fetch casts and signers in background after user data is loaded
+    if (user && casts.length === 0) {
+      fetchUserCasts();
+    }
+    if (user && signers.length === 0) {
+      fetchUserSigners();
+    }
+  }, [user, casts.length, signers.length, fetchUserCasts, fetchUserSigners]);
+
+  useEffect(() => {
+    if (activeTab === 'casts' && casts.length === 0) {
+      fetchUserCasts();
+    }
+    if (activeTab === 'signers' && signers.length === 0) {
+      fetchUserSigners();
+    }
+  }, [activeTab, casts.length, signers.length, fetchUserCasts, fetchUserSigners]);
 
   const formatTimeAgo = (dateString: string): string => {
     const now = new Date();
@@ -289,9 +290,11 @@ export default function UserPage({ params }: { params: Promise<{ fid: string }> 
           
           {/* User Profile Header */}
           <div className="flex items-center space-x-4 mb-8">
-            <img
+            <Image
               src={user.pfp_url || '/default-avatar.png'}
               alt={user.display_name}
+              width={64}
+              height={64}
               className="w-16 h-16 rounded-full"
             />
             <div>
@@ -468,9 +471,11 @@ export default function UserPage({ params }: { params: Promise<{ fid: string }> 
                       <div key={app.fid} className="border rounded-lg p-4 space-y-3" style={{borderColor: 'var(--border-color)', backgroundColor: 'var(--card-background)'}}>
                         {/* App Header */}
                         <div className="flex items-center space-x-3">
-                          <img
+                          <Image
                             src={app.profile?.pfp_url || '/default-avatar.png'}
                             alt={app.profile?.display_name || `FID ${app.fid}`}
+                            width={40}
+                            height={40}
                             className="w-10 h-10 rounded-full"
                           />
                           <div className="flex-1 min-w-0">

@@ -39,10 +39,10 @@ export async function GET(request: NextRequest) {
 
     // Get all activity data for message stats
     let castsData = { casts: [] }
-    let likesData: any = { messages: [] }
-    let recastsData: any = { messages: [] }
-    let linksData: any = { messages: [] }
-    let verificationsData: any = { messages: [] }
+    let likesData: { messages: unknown[] } = { messages: [] }
+    let recastsData: { messages: unknown[] } = { messages: [] }
+    let linksData: { messages: unknown[] } = { messages: [] }
+    let verificationsData: { messages: unknown[] } = { messages: [] }
 
     if (castsResponse.ok) {
       castsData = await castsResponse.json()
@@ -105,8 +105,8 @@ export async function GET(request: NextRequest) {
     if (castsData.casts && Array.isArray(castsData.casts)) {
       //console.log('Processing casts, sample cast:', JSON.stringify(castsData.casts[0], null, 2));
       for (const cast of castsData.casts) {
-        const castData = cast as any;
-        const appFid = castData.app?.fid?.toString()
+        const castData = cast as Record<string, unknown>;
+        const appFid = (castData.app as Record<string, unknown>)?.fid?.toString()
         if (!appFid) continue
 
         if (!messagesBySigner[appFid]) {
@@ -123,7 +123,7 @@ export async function GET(request: NextRequest) {
         messagesBySigner[appFid].casts++
         messagesBySigner[appFid].total++
 
-        const timestamp = castData.timestamp
+        const timestamp = castData.timestamp as string
         if (timestamp) {
           const messageDate = new Date(timestamp)
           if (!messagesBySigner[appFid].lastUsed || messageDate > new Date(messagesBySigner[appFid].lastUsed)) {
@@ -137,8 +137,8 @@ export async function GET(request: NextRequest) {
     if (likesData.messages && Array.isArray(likesData.messages)) {
       //console.log('Processing likes, sample like:', JSON.stringify(likesData.messages[0], null, 2));
       for (const like of likesData.messages) {
-        const likeData = like as any;
-        const signerKey = likeData.signer
+        const likeData = like as Record<string, unknown>;
+        const signerKey = likeData.signer as string
         if (!signerKey) continue
         
         const appFid = signerToAppMap[signerKey]
@@ -158,7 +158,7 @@ export async function GET(request: NextRequest) {
         messagesBySigner[appFid].reactions++
         messagesBySigner[appFid].total++
 
-        const timestamp = likeData.data?.timestamp
+        const timestamp = (likeData.data as Record<string, unknown>)?.timestamp as string
         if (timestamp) {
           const messageDate = new Date(timestamp)
           if (!messagesBySigner[appFid].lastUsed || messageDate > new Date(messagesBySigner[appFid].lastUsed)) {
@@ -172,8 +172,8 @@ export async function GET(request: NextRequest) {
     if (recastsData.messages && Array.isArray(recastsData.messages)) {
       //console.log('Processing recasts, sample recast:', JSON.stringify(recastsData.messages[0], null, 2));
       for (const recast of recastsData.messages) {
-        const recastData = recast as any;
-        const signerKey = recastData.signer
+        const recastData = recast as Record<string, unknown>;
+        const signerKey = recastData.signer as string
         if (!signerKey) continue
         
         const appFid = signerToAppMap[signerKey]
@@ -193,7 +193,7 @@ export async function GET(request: NextRequest) {
         messagesBySigner[appFid].reactions++
         messagesBySigner[appFid].total++
 
-        const timestamp = recastData.data?.timestamp
+        const timestamp = (recastData.data as Record<string, unknown>)?.timestamp as string
         if (timestamp) {
           const messageDate = new Date(timestamp)
           if (!messagesBySigner[appFid].lastUsed || messageDate > new Date(messagesBySigner[appFid].lastUsed)) {
@@ -207,8 +207,8 @@ export async function GET(request: NextRequest) {
     if (linksData.messages && Array.isArray(linksData.messages)) {
       //console.log('Processing links, sample link:', JSON.stringify(linksData.messages[0], null, 2));
       for (const link of linksData.messages) {
-        const linkData = link as any;
-        const signerKey = linkData.signer
+        const linkData = link as Record<string, unknown>;
+        const signerKey = linkData.signer as string
         if (!signerKey) continue
         
         const appFid = signerToAppMap[signerKey]
@@ -228,7 +228,7 @@ export async function GET(request: NextRequest) {
         messagesBySigner[appFid].links++
         messagesBySigner[appFid].total++
 
-        const timestamp = linkData.data?.timestamp
+        const timestamp = (linkData.data as Record<string, unknown>)?.timestamp as string
         if (timestamp) {
           const messageDate = new Date(timestamp)
           if (!messagesBySigner[appFid].lastUsed || messageDate > new Date(messagesBySigner[appFid].lastUsed)) {
@@ -242,8 +242,8 @@ export async function GET(request: NextRequest) {
     if (verificationsData.messages && Array.isArray(verificationsData.messages)) {
       //console.log('Processing verifications, sample verification:', JSON.stringify(verificationsData.messages[0], null, 2));
       for (const verification of verificationsData.messages) {
-        const verificationData = verification as any;
-        const signerKey = verificationData.signer
+        const verificationData = verification as Record<string, unknown>;
+        const signerKey = verificationData.signer as string
         if (!signerKey) continue
         
         const appFid = signerToAppMap[signerKey]
@@ -263,7 +263,7 @@ export async function GET(request: NextRequest) {
         messagesBySigner[appFid].verifications++
         messagesBySigner[appFid].total++
 
-        const timestamp = verificationData.data?.timestamp
+        const timestamp = (verificationData.data as Record<string, unknown>)?.timestamp as string
         if (timestamp) {
           const messageDate = new Date(timestamp)
           if (!messagesBySigner[appFid].lastUsed || messageDate > new Date(messagesBySigner[appFid].lastUsed)) {
