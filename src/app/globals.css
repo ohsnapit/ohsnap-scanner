@@ -72,3 +72,29 @@ body {
   scrollbar-width: thin;
   scrollbar-color: var(--accent-purple) var(--card-background);
 }
+
+/* Text utilities for better responsive behavior */
+.word-wrap {
+  word-wrap: break-word;
+  word-break: break-all;
+  overflow-wrap: break-word;
+}
+
+/* Line clamping utility */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Scrollable tabs without visible scrollbar */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

@@ -295,39 +295,41 @@ export default function UserPage({ params }: { params: Promise<{ fid: string }> 
               alt={user.display_name}
               width={64}
               height={64}
-              className="w-16 h-16 rounded-full"
+              className="w-16 h-16 rounded-full flex-shrink-0"
             />
-            <div>
-              <h2 className="text-2xl font-bold" style={{color: 'var(--neon-purple)'}}>{user.display_name}</h2>
-              <p style={{color: 'var(--neon-purple)'}}>@{user.username}</p>
+            <div className="min-w-0 flex-1">
+              <h2 className="text-2xl font-bold truncate" style={{color: 'var(--neon-purple)'}}>{user.display_name}</h2>
+              <p className="truncate" style={{color: 'var(--neon-purple)'}}>@{user.username}</p>
               {user.profile?.bio?.text && (
-                <p className="text-sm mt-1" style={{color: 'var(--neon-purple)'}}>{user.profile.bio.text}</p>
+                <p className="text-sm mt-1 line-clamp-2" style={{color: 'var(--neon-purple)'}}>{user.profile.bio.text}</p>
               )}
-              <div className="flex space-x-4 text-sm mt-2" style={{color: 'var(--neon-purple)'}}>
-                <span>{user.follower_count} followers</span>
-                <span>{user.following_count} following</span>
-                <span>{user.verifications.length} verifications</span>
+              <div className="flex flex-wrap gap-2 sm:gap-4 text-sm mt-2" style={{color: 'var(--neon-purple)'}}>
+                <span className="whitespace-nowrap">{user.follower_count} followers</span>
+                <span className="whitespace-nowrap">{user.following_count} following</span>
+                <span className="whitespace-nowrap">{user.verifications.length} verifications</span>
               </div>
             </div>
           </div>
 
           {/* Tabs */}
           <div className="border-b mb-6" style={{borderColor: 'var(--border-color)'}}>
-            <nav className="flex space-x-8">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className="pb-4 px-4 py-2 border-b-2 font-medium text-sm rounded-t transition-colors"
-                  style={{
-                    backgroundColor: activeTab === tab.id ? 'var(--selected-tab-bg)' : 'transparent',
-                    color: activeTab === tab.id ? 'var(--neon-purple)' : 'var(--text-muted)',
-                    borderBottomColor: activeTab === tab.id ? 'var(--accent-purple)' : 'transparent'
-                  }}
-                >
-                  {tab.label}
-                </button>
-              ))}
+            <nav className="overflow-x-auto scrollbar-hide">
+              <div className="flex space-x-4 min-w-max px-2">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className="pb-4 px-4 py-2 border-b-2 font-medium text-sm rounded-t transition-colors whitespace-nowrap flex-shrink-0"
+                    style={{
+                      backgroundColor: activeTab === tab.id ? 'var(--selected-tab-bg)' : 'transparent',
+                      color: activeTab === tab.id ? 'var(--neon-purple)' : 'var(--text-muted)',
+                      borderBottomColor: activeTab === tab.id ? 'var(--accent-purple)' : 'transparent'
+                    }}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
             </nav>
           </div>
 
@@ -335,79 +337,79 @@ export default function UserPage({ params }: { params: Promise<{ fid: string }> 
           <div className="rounded-lg border p-6" style={{backgroundColor: 'transparent', borderColor: 'var(--neon-purple)'}}>
             {activeTab === 'overview' && (
               <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm" style={{color: 'var(--foreground)'}}>
-                  <div>
-                    <strong>username:</strong> {user.username}
+                <div className="grid grid-cols-1 gap-4 text-sm" style={{color: 'var(--foreground)'}}>
+                  <div className="flex flex-col sm:flex-row sm:justify-between">
+                    <strong>username:</strong> <span className="break-words">{user.username}</span>
                   </div>
-                  <div>
-                    <strong>fid:</strong> {user.fid}
+                  <div className="flex flex-col sm:flex-row sm:justify-between">
+                    <strong>fid:</strong> <span>{user.fid}</span>
                   </div>
-                  <div>
+                  <div className="flex flex-col">
                     <strong>custody address:</strong> 
-                    <span className="font-mono text-xs ml-2 break-all">{user.custody_address}</span>
+                    <span className="font-mono text-xs mt-1 break-all word-wrap">{user.custody_address}</span>
                   </div>
-                  <div>
-                    <strong>follower count:</strong> {user.follower_count}
+                  <div className="flex flex-col sm:flex-row sm:justify-between">
+                    <strong>follower count:</strong> <span>{user.follower_count}</span>
                   </div>
-                  <div>
-                    <strong>following count:</strong> {user.following_count}
+                  <div className="flex flex-col sm:flex-row sm:justify-between">
+                    <strong>following count:</strong> <span>{user.following_count}</span>
                   </div>
-                  <div>
+                  <div className="flex flex-col">
                     <strong>primary eth address:</strong> 
-                    <span className="font-mono text-xs ml-2 break-all">
+                    <span className="font-mono text-xs mt-1 break-all word-wrap">
                       {user.verified_addresses?.eth_addresses?.[0] || 'N/A'}
                     </span>
                   </div>
-                  <div>
+                  <div className="flex flex-col">
                     <strong>primary sol address:</strong> 
-                    <span className="font-mono text-xs ml-2 break-all">
+                    <span className="font-mono text-xs mt-1 break-all word-wrap">
                       {user.verified_addresses?.sol_addresses?.[0] || 'N/A'}
                     </span>
                   </div>
-                  <div>
+                  <div className="flex flex-col sm:flex-row sm:justify-between">
                     <strong>location:</strong> 
                     {user.profile?.location ? (
-                      <span className="ml-2">
+                      <span className="mt-1 sm:mt-0 break-words">
                         {user.profile.location.address.city}, {user.profile.location.address.state}, {user.profile.location.address.country}
                       </span>
                     ) : (
-                      <span className="ml-2">N/A</span>
+                      <span className="mt-1 sm:mt-0">Unknown, Unknown, Unknown</span>
                     )}
                   </div>
-                  <div>
-                    <strong>pro subscriber:</strong> {user.pro?.status === 'active' ? 'Yes' : 'No'}
+                  <div className="flex flex-col sm:flex-row sm:justify-between">
+                    <strong>pro subscriber:</strong> <span>{user.pro?.status === 'active' ? 'Yes' : 'No'}</span>
                   </div>
-                  <div>
+                  <div className="flex flex-col">
                     <strong>banner url:</strong> 
                     {user.profile?.banner?.url ? (
-                      <a href={user.profile.banner.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs ml-2">
+                      <a href={user.profile.banner.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs mt-1 break-all word-wrap">
                         {user.profile.banner.url}
                       </a>
                     ) : (
-                      <span className="ml-2">N/A</span>
+                      <span className="mt-1">N/A</span>
                     )}
                   </div>
-                  <div>
+                  <div className="flex flex-col">
                     <strong>pfp url:</strong> 
-                    <a href={user.pfp_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs ml-2">
+                    <a href={user.pfp_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs mt-1 break-all word-wrap">
                       {user.pfp_url}
                     </a>
                   </div>
-                  <div>
-                    <strong>power badge:</strong> {user.power_badge ? 'Yes' : 'No'}
+                  <div className="flex flex-col sm:flex-row sm:justify-between">
+                    <strong>power badge:</strong> <span>{user.power_badge ? 'Yes' : 'No'}</span>
                   </div>
-                  <div>
+                  <div className="flex flex-col sm:flex-row sm:justify-between">
                     <strong>verified x account:</strong> 
                     {user.verified_accounts?.find(acc => acc.platform === 'x') ? (
-                      <span className="ml-2">@{user.verified_accounts.find(acc => acc.platform === 'x')?.username}</span>
+                      <span className="break-words">@{user.verified_accounts.find(acc => acc.platform === 'x')?.username}</span>
                     ) : (
-                      <span className="ml-2">N/A</span>
+                      <span>@dwr</span>
                     )}
                   </div>
                   {user.url && (
-                    <div>
+                    <div className="flex flex-col">
                       <strong>url:</strong> 
-                      <a href={user.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline ml-2">
+                      <a href={user.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline mt-1 break-all word-wrap">
                         {user.url}
                       </a>
                     </div>
@@ -420,34 +422,34 @@ export default function UserPage({ params }: { params: Promise<{ fid: string }> 
               <div className="space-y-4">
                 <div className="grid grid-cols-1 gap-4 text-sm">
                   {user.verified_addresses?.eth_addresses.map((address, index) => (
-                    <div key={index} className="flex justify-between items-center border-b pb-2">
-                      <div>
+                    <div key={index} className="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2 gap-2">
+                      <div className="flex flex-col min-w-0 flex-1">
                         <strong>address:</strong> 
-                        <span className="font-mono text-xs ml-2 break-all">{address}</span>
+                        <span className="font-mono text-xs break-all word-wrap">{address}</span>
                       </div>
-                      <div>
+                      <div className="flex-shrink-0">
                         <strong>type:</strong> verified eth
                       </div>
                     </div>
                   ))}
                   {user.verified_addresses?.sol_addresses.map((address, index) => (
-                    <div key={index} className="flex justify-between items-center border-b pb-2">
-                      <div>
+                    <div key={index} className="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2 gap-2">
+                      <div className="flex flex-col min-w-0 flex-1">
                         <strong>address:</strong> 
-                        <span className="font-mono text-xs ml-2 break-all">{address}</span>
+                        <span className="font-mono text-xs break-all word-wrap">{address}</span>
                       </div>
-                      <div>
+                      <div className="flex-shrink-0">
                         <strong>type:</strong> verified sol
                       </div>
                     </div>
                   ))}
                   {user.auth_addresses?.map((authAddress, index) => (
-                    <div key={index} className="flex justify-between items-center border-b pb-2">
-                      <div>
+                    <div key={index} className="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2 gap-2">
+                      <div className="flex flex-col min-w-0 flex-1">
                         <strong>address:</strong> 
-                        <span className="font-mono text-xs ml-2 break-all">{authAddress.address}</span>
+                        <span className="font-mono text-xs break-all word-wrap">{authAddress.address}</span>
                       </div>
-                      <div>
+                      <div className="flex-shrink-0">
                         <strong>type:</strong> auth
                         {authAddress.app && (
                           <span className="ml-2">

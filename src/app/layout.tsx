@@ -9,7 +9,7 @@ const shantellSans = Shantell_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "OhSnap Scanner",
+  title: "Scan by OhSnap",
   description: "Scan and explore Farcaster user data with OhSnap API",
 };
 
