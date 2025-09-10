@@ -9,8 +9,8 @@ export const size = {
 export const contentType = 'image/png';
 
 export default function Image() {
-  const title = 'OhSnap Scanner';
-  const subtitle = 'Farcaster user scanner by OhSnap';
+  const title = 'Scan by OhSnap';
+  const subtitle = 'Farcaster scanner by OhSnap';
 
   return new ImageResponse(
     (
