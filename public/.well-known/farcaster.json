@@ -1,16 +1,16 @@
 {
   "accountAssociation": {
-    "header": "",
-    "payload": "",
-    "signature": ""
+    "header": "eyJmaWQiOjg2MDc4MywidHlwZSI6ImF1dGgiLCJrZXkiOiIweGEyMjg1OTNFNjgwNzJGQzY2ZGViNDM1QTc1MEE3QjQ4MUQwZENGMzIifQ",
+    "payload": "eyJkb21haW4iOiJzY2FuLm9oc25hcC5pdCJ9",
+    "signature": "nMWAjTuwzFoftaP7wWg0tKY3g0MscnfdSNFtdNb5p1kzzu9zNpRa/55O4a6rlvNy+dru7GTi6dbjHgxJZ66BiRw="
   },
   "miniapp": {
     "version": "1",
-    "name": "OhSnap Scanner",
+    "name": "Scan by OhSnap",
     "iconUrl": "https://scan.ohsnap.it/logo.png",
     "homeUrl": "https://scan.ohsnap.it",
     "imageUrl": "https://scan.ohsnap.it/opengraph-image",
-    "buttonTitle": "Open OhSnap Scanner",
+    "buttonTitle": "Open Scan by OhSnap",
     "splashImageUrl": "https://scan.ohsnap.it/logo.png",
     "splashBackgroundColor": "#0b0b0f",
     "webhookUrl": "https://scan.ohsnap.it/api/miniapp/webhook"
