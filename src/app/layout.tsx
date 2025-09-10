@@ -9,8 +9,8 @@ const shantellSans = Shantell_Sans({
   weight: ['300', '400', '500', '600', '700', '800'],
 });
 
-const APP_NAME = "OhSnap Scanner";
-const APP_DESC = "Scan and explore Farcaster user data with OhSnap API";
+const APP_NAME = "Scan by OhSnap";
+const APP_DESC = "Scan and explore Farcaster data with OhSnap API";
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://scan.ohsnap.it";
 
 export const metadata: Metadata = {
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
       version: "1",
       imageUrl: `${BASE_URL}/opengraph-image`,
       button: {
-        title: "Open OhSnap Scanner",
+        title: "Open Scan by OhSnap",
         action: {
           type: "launch_frame",
           name: APP_NAME,

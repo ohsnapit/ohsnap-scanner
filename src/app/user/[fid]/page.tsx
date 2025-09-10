@@ -555,7 +555,12 @@ export default function UserPage({ params }: { params: Promise<{ fid: string }> 
                                 {new Date(cast.timestamp).toLocaleDateString()}
                               </span>
                             </div>
-                            <p className="mb-2" style={{color: 'var(--foreground)'}}>{cast.text}</p>
+                            <p
+                              className="mb-2 whitespace-pre-wrap break-words"
+                              style={{ color: 'var(--foreground)', overflowWrap: 'anywhere' }}
+                            >
+                              {cast.text}
+                            </p>
                             <div className="flex space-x-4 text-sm" style={{color: 'var(--text-muted)'}}>
                               <span className="flex items-center space-x-1">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

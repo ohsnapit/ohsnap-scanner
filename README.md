@@ -1,4 +1,4 @@
-# OhSnap Scanner
+# Scan by Ohsnap
 
 A Next.js application for scanning and exploring Farcaster user data using the OhSnap API,connected to OhSnap endpoints.
 

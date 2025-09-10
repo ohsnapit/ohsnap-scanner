@@ -20,7 +20,7 @@ export default function Home() {
           <div className="text-center" style={{color: 'var(--text-muted)'}}>
             <p className="mb-4">Try searching for FIDs:</p>
             <div className="flex flex-wrap justify-center gap-2">
-              {['3', '2', '9', '860783'].map((fid) => (
+              {['2', '3', '387','317138', '860783', ''].map((fid) => (
                 <button
                   key={fid}
                   onClick={() => router.push(`/user/${fid}`)}
