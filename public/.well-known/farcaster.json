@@ -1,0 +1,18 @@
+{
+  "accountAssociation": {
+    "header": "",
+    "payload": "",
+    "signature": ""
+  },
+  "miniapp": {
+    "version": "1",
+    "name": "OhSnap Scanner",
+    "iconUrl": "https://scan.ohsnap.it/logo.png",
+    "homeUrl": "https://scan.ohsnap.it",
+    "imageUrl": "https://scan.ohsnap.it/opengraph-image",
+    "buttonTitle": "Open OhSnap Scanner",
+    "splashImageUrl": "https://scan.ohsnap.it/logo.png",
+    "splashBackgroundColor": "#0b0b0f",
+    "webhookUrl": "https://scan.ohsnap.it/api/miniapp/webhook"
+  }
+}

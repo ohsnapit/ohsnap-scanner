@@ -12,6 +12,7 @@
     "next": "15.5.2",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "@farcaster/miniapp-sdk": "latest",
     "viem": "^2.37.4"
   },
   "devDependencies": {
