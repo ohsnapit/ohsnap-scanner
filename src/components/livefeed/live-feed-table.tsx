@@ -1,11 +1,11 @@
 "use client";
 
 import { useMemo } from "react";
-import type { Event } from "@/types/events";
+import type { StreamEvent } from "@/hooks/use-event-stream";
 import { Skeleton } from "@/components/Skeleton";
 
 interface LiveFeedTableProps {
-  events: Event[];
+  events: StreamEvent[];
   pageIndex: number;
   pageSize: number;
   onPageIndexChange: (n: number) => void;
@@ -19,9 +19,8 @@ export function LiveFeedTable({ events, pageIndex, pageSize, onPageIndexChange }
   const startIndex = pageIndex * pageSize;
   const endIndex = startIndex + pageSize;
   const pageRows = useMemo(() => {
-    const sliced = events.slice(startIndex, endIndex);
-    return sliced;
-  }, [events, startIndex, endIndex, pageSize, pageIndex]);
+    return events.slice(startIndex, endIndex);
+  }, [events, startIndex, endIndex]);
 
   return (
     <div className="overflow-x-auto md:overflow-x-visible">

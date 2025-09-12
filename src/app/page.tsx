@@ -1,13 +1,9 @@
 'use client';
-
-import { useRouter } from 'next/navigation';
 import SearchBar from '@/components/SearchBar';
 import Header from '@/components/Header';
 import { LiveFeed } from '@/components/livefeed/live-feed';
 
 export default function Home() {
-  const router = useRouter();
-
   return (
     <div className="min-h-screen" style={{backgroundColor: 'var(--background)', color: 'var(--foreground)'}}>
       <Header />

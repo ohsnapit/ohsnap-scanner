@@ -9,8 +9,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json().catch(() => null);
     console.log('[miniapp webhook] received event', body ? Object.keys(body) : 'no body');
     return NextResponse.json({ ok: true });
-  } catch (e) {
+  } catch {
     return NextResponse.json({ ok: false }, { status: 400 });
   }
 }
-

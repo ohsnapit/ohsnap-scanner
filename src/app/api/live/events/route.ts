@@ -4,17 +4,13 @@ import type { NextRequest } from "next/server";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-function write(res: ReadableStreamDefaultController<Uint8Array>, data: unknown) {
-  const enc = new TextEncoder();
-  res.enqueue(enc.encode(`data: ${JSON.stringify(data)}\n\n`));
-}
-
 export async function GET(req: NextRequest) {
   await FeedBus.start();
 
   const { searchParams } = new URL(req.url);
   const replay = Math.min(100, Math.max(0, Number(searchParams.get("replay") || "20")));
 
+  let doCleanup: (() => void) | null = null;
   const stream = new ReadableStream<Uint8Array>({
     start(controller) {
       const enc = new TextEncoder();
@@ -45,13 +41,11 @@ export async function GET(req: NextRequest) {
         clearInterval(heartbeat);
         unsubscribe();
       };
-
-      (controller as any)._cleanup = cleanup;
+      doCleanup = cleanup;
     },
     cancel() {
       try {
-        const fn = (this as any)._cleanup as undefined | (() => void);
-        fn && fn();
+        if (doCleanup) doCleanup();
       } catch {}
     },
   });

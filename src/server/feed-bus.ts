@@ -1,6 +1,16 @@
 import type { Consumer, KafkaMessage, SASLOptions } from "kafkajs";
 import { EventEmitter } from "events";
-import type { Event } from "@/types/events";
+// Local UI event type used by SSE
+export type Event = {
+  id: string;
+  seq: number;
+  fid?: number;
+  type: string;
+  content?: string;
+  link?: string;
+  raw?: unknown;
+  timestamp?: number;
+};
 
 class RingBuffer {
   private buf: Event[] = [];
@@ -11,8 +21,7 @@ class RingBuffer {
   }
   since(seq: number | undefined, limit: number) {
     if (!seq) return this.buf.slice(0, limit);
-    const idx = this.buf.findIndex((e) => e.seq <= seq);
-    const start = idx === -1 ? 0 : 0; // newer than seq are those with seq > given
+    // newer than seq are those with seq > given
     const res: Event[] = [];
     for (const e of this.buf) {
       if (e.seq > seq) res.push(e);
@@ -56,7 +65,7 @@ class FeedBusImpl {
     if (!cfg) return;
     
     try {
-      const { Kafka } = require("kafkajs") as typeof import("kafkajs");
+      const { Kafka } = await import("kafkajs");
       const kafka = new Kafka({ brokers: cfg.brokers, ssl: cfg.ssl, sasl: cfg.sasl });
       const consumer = kafka.consumer({ groupId: `ohsnap-live-${Math.random().toString(36).slice(2)}` });
       this.consumer = consumer;
@@ -78,33 +87,40 @@ class FeedBusImpl {
   }
 
   private toEvent(message: KafkaMessage, topic: string, partition: number): Event {
-    let payload: any = undefined;
+    let payload: unknown = undefined;
     if (message.value) {
       try {
         payload = JSON.parse(message.value.toString());
       } catch {
-        payload = { base64: Buffer.from(message.value).toString("base64") };
+        payload = { base64: Buffer.from(message.value).toString("base64") } as unknown;
       }
     }
-    const typeNum = Number(payload?.type ?? NaN);
+    const p = payload as Record<string, unknown> | undefined;
+    const typeNum = Number((p?.type as number | string | undefined) ?? NaN);
     const type = mapType(typeNum);
     let content: string | undefined = undefined;
-    let link: string | undefined = payload?.parent?.url || payload?.targetUrl || undefined;
+    const parent = (p?.parent as Record<string, unknown> | undefined) || undefined;
+    const targetUrl = p?.targetUrl as string | undefined;
+    const link: string | undefined = (parent?.url as string | undefined) || targetUrl || undefined;
     switch (typeNum) {
       case 1:
-        content = payload?.text;
+        content = p?.text as string | undefined;
         break;
       case 2:
-        content = payload?.targetHash ? `remove ${shortHash(payload.targetHash)}` : undefined;
+        {
+          const th = p?.targetHash as string | undefined;
+          content = th ? `remove ${shortHash(th)}` : undefined;
+        }
         break;
       case 3:
       case 4: {
-        const r = Number(payload?.reactionType ?? 0);
+        const r = Number((p?.reactionType as number | string | undefined) ?? 0);
         const rStr = r === 1 ? "LIKE" : r === 2 ? "RECAST" : `REACTION_${r || "?"}`;
-        if (payload?.targetCast?.fid && payload?.targetCast?.hash) {
-          content = `${rStr} ${payload.targetCast.fid}:${shortHash(payload.targetCast.hash)}`;
-        } else if (payload?.targetUrl) {
-          content = `${rStr} ${payload.targetUrl}`;
+        const targetCast = p?.targetCast as { fid?: number; hash?: string } | undefined;
+        if (targetCast?.fid && targetCast?.hash) {
+          content = `${rStr} ${targetCast.fid}:${shortHash(targetCast.hash)}`;
+        } else if (targetUrl) {
+          content = `${rStr} ${targetUrl}`;
         } else {
           content = rStr;
         }
@@ -112,29 +128,30 @@ class FeedBusImpl {
       }
       case 5:
       case 6: {
-        const t = payload?.linkType || "link";
-        const target = payload?.targetFid ? String(payload.targetFid) : "";
+        const t = (p?.linkType as string | undefined) || "link";
+        const target = (p?.targetFid as number | undefined) ? String(p?.targetFid) : "";
         content = target ? `${t} -> ${target}` : t;
         break;
       }
       case 11: {
-        const u = Number(payload?.userDataType ?? 0);
-        content = `${mapUserDataType(u)}: ${payload?.value ?? ""}`.trim();
+        const u = Number((p?.userDataType as number | string | undefined) ?? 0);
+        const val = (p?.value as string | undefined) ?? "";
+        content = `${mapUserDataType(u)}: ${val}`.trim();
         break;
       }
       default:
-        content = payload?.text || payload?.value || undefined;
+        content = (p?.text as string | undefined) || (p?.value as string | undefined) || undefined;
     }
     const seq = ++this.seq;
     return {
-      id: payload?.hash || `${topic}-${partition}-${message.offset}`,
+      id: (p?.hash as string | undefined) || `${topic}-${partition}-${message.offset}`,
       seq,
-      fid: payload?.fid ? Number(payload.fid) : undefined,
+      fid: p?.fid ? Number(p.fid as number | string) : undefined,
       type,
       content,
       link,
       raw: payload,
-      timestamp: Number(payload?.timestamp ?? Date.now()),
+      timestamp: Number((p?.timestamp as number | string | undefined) ?? Date.now()),
     };
   }
 

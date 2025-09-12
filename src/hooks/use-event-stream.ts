@@ -1,7 +1,17 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { Event } from "@/types/events";
+
+export type StreamEvent = {
+  id: string;
+  seq?: number;
+  fid?: number;
+  type: string;
+  content?: string;
+  link?: string;
+  raw?: unknown;
+  timestamp?: number;
+};
 
 const MAX_EVENTS = 500;
 
@@ -9,7 +19,7 @@ export function useEventStream(opts?: { paused?: boolean; replay?: number }) {
   const paused = !!opts?.paused;
   const replay = Math.max(0, Math.min(100, opts?.replay ?? 20));
 
-  const [events, setEvents] = useState<Event[]>([]);
+  const [events, setEvents] = useState<StreamEvent[]>([]);
   const [connected, setConnected] = useState<boolean>(false);
   const esRef = useRef<EventSource | null>(null);
 
@@ -31,7 +41,7 @@ export function useEventStream(opts?: { paused?: boolean; replay?: number }) {
     es.onerror = () => setConnected(false);
     es.onmessage = (e) => {
       try {
-        const data = JSON.parse(e.data) as Event;
+        const data = JSON.parse(e.data) as StreamEvent;
         setEvents((prev) => {
           const next = [data, ...prev];
           if (next.length > MAX_EVENTS) next.length = MAX_EVENTS;
