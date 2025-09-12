@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import SearchBar from '@/components/SearchBar';
 import Header from '@/components/Header';
+import { LiveFeed } from '@/components/livefeed/live-feed';
 
 export default function Home() {
   const router = useRouter();
@@ -13,27 +14,9 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-6xl mx-auto w-full">
           <SearchBar className="mb-8 max-w-md mx-auto" />
-
-          {/* Quick Links */}
-          <div className="text-center" style={{color: 'var(--text-muted)'}}>
-            <p className="mb-4">Try searching for FIDs:</p>
-            <div className="flex flex-wrap justify-center gap-2">
-              {['2', '3', '387','317138', '860783'].map((fid) => (
-                <button
-                  key={fid}
-                  onClick={() => router.push(`/user/${fid}`)}
-                  className="px-4 py-2 rounded-lg text-sm transition-colors"
-                  style={{backgroundColor: 'var(--card-background)', color: 'var(--foreground)'}}
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--border-color)'}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--card-background)'}
-                >
-                  {fid}
-                </button>
-              ))}
-            </div>
-          </div>
+          <LiveFeed />
         </div>
       </main>
     </div>
