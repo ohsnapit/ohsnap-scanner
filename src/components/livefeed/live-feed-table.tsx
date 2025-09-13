@@ -22,6 +22,48 @@ export function LiveFeedTable({ events, pageIndex, pageSize, onPageIndexChange }
     return events.slice(startIndex, endIndex);
   }, [events, startIndex, endIndex]);
 
+  const getCastHash = (row: StreamEvent): string | undefined => {
+    const t = row.type;
+    const raw = (row.raw as Record<string, unknown> | undefined) || undefined;
+    if (!raw) return undefined;
+    if (t === 'CAST_ADD') {
+      return (raw.hash as string) || undefined;
+    }
+    if (t === 'CAST_REMOVE') {
+      return (raw.targetHash as string) || undefined;
+    }
+    if (t === 'REACTION_ADD' || t === 'REACTION_REMOVE') {
+      const tc = raw.targetCast as { fid?: number; hash?: string } | undefined;
+      return tc?.hash || undefined;
+    }
+    return undefined;
+  };
+
+  const getCastFid = (row: StreamEvent): number | undefined => {
+    const t = row.type;
+    const raw = (row.raw as Record<string, unknown> | undefined) || undefined;
+    if (!raw) return undefined;
+    if (t === 'CAST_ADD' || t === 'CAST_REMOVE') {
+      return typeof row.fid === 'number' ? row.fid : undefined;
+    }
+    if (t === 'REACTION_ADD' || t === 'REACTION_REMOVE') {
+      const tc = raw.targetCast as { fid?: number; hash?: string } | undefined;
+      return (tc?.fid && tc.fid > 0) ? tc.fid : undefined;
+    }
+    return undefined;
+  };
+
+  const getLinkTargetFid = (row: StreamEvent): number | undefined => {
+    const t = row.type;
+    const raw = (row.raw as Record<string, unknown> | undefined) || undefined;
+    if (!raw) return undefined;
+    if (t === 'LINK_ADD' || t === 'LINK_REMOVE') {
+      const tfid = raw.targetFid as number | undefined;
+      return typeof tfid === 'number' && tfid > 0 ? tfid : undefined;
+    }
+    return undefined;
+  };
+
   return (
     <div className="overflow-x-auto md:overflow-x-visible">
       <div
@@ -54,10 +96,52 @@ export function LiveFeedTable({ events, pageIndex, pageSize, onPageIndexChange }
                   )}
                 </div>
                 <div className="col-span-7 overflow-hidden">
-                  <span className="block truncate max-w-full" style={{ color: 'var(--foreground)' }}>{row.content || ''}</span>
+                  {(() => {
+                    const castHash = getCastHash(row);
+                    const linkFid = getLinkTargetFid(row);
+                    const content = <span className="block truncate max-w-full" style={{ color: 'var(--foreground)' }}>{row.content || ''}</span>;
+                    if (castHash) {
+                      const castFid = getCastFid(row);
+                      const href = castFid ? `/cast/${castHash}?fid=${castFid}` : `/cast/${castHash}`;
+                      return (
+                        <a href={href} className="hover:underline block truncate max-w-full">
+                          {content}
+                        </a>
+                      );
+                    }
+                    if (linkFid) {
+                      return (
+                        <a href={`/user/${linkFid}`} className="hover:underline block truncate max-w-full">
+                          {content}
+                        </a>
+                      );
+                    }
+                    return content;
+                  })()}
                 </div>
                 <div className="col-span-2">
-                  <span className="text-sm" style={{ color: 'var(--text-muted)' }}>{row.type}</span>
+                  {(() => {
+                    const castHash = getCastHash(row);
+                    const linkFid = getLinkTargetFid(row);
+                    const typeEl = <span className="text-sm" style={{ color: '#71579E' }}>{row.type}</span>;
+                    if (castHash) {
+                      const castFid = getCastFid(row);
+                      const href = castFid ? `/cast/${castHash}?fid=${castFid}` : `/cast/${castHash}`;
+                      return (
+                        <a href={href} className="hover:underline">
+                          {typeEl}
+                        </a>
+                      );
+                    }
+                    if (linkFid) {
+                      return (
+                        <a href={`/user/${linkFid}`} className="hover:underline">
+                          {typeEl}
+                        </a>
+                      );
+                    }
+                    return typeEl;
+                  })()}
                 </div>
               </div>
             ))}
